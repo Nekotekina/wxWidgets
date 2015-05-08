@@ -2577,3 +2577,29 @@
 # /utils/wxrc/
 /utils/wxrc/*.sln
 /utils/wxrc/*.dsw
+
+
+# RPCS3 modifications
+*.sdf
+*.suo
+*.opensdf
+*.vcxproj.user
+
+# Visual Studio compilation files.
+build/**/*.pch
+build/**/*.log
+build/**/*.tlog
+build/**/*.lastbuildstate
+build/**/*.obj
+lib/**/*.lib
+lib/**/*.pdb
+
+# Generated header files.
+lib/vc_lib/mswu/wx/msw/rcdefs.h
+lib/vc_lib/mswu/wx/setup.h
+lib/vc_lib/mswud/wx/msw/rcdefs.h
+lib/vc_lib/mswud/wx/setup.h
+lib/vc_x64_lib/mswu/wx/msw/rcdefs.h
+lib/vc_x64_lib/mswu/wx/setup.h
+lib/vc_x64_lib/mswud/wx/msw/rcdefs.h
+lib/vc_x64_lib/mswud/wx/setup.h 
