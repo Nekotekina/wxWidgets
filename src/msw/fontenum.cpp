@@ -51,12 +51,12 @@ public:
     wxFontEnumeratorHelper(wxFontEnumerator *fontEnum);
 
     // control what exactly are we enumerating
-        // we enumerate fonts with given enocding
+        // we enumerate fonts with the given encoding
     bool SetEncoding(wxFontEncoding encoding);
         // we enumerate fixed-width fonts
     void SetFixedOnly(bool fixedOnly) { m_fixedOnly = fixedOnly; }
-        // we enumerate the encodings available in this family
-    void SetFamily(const wxString& family);
+        // we enumerate the encodings this font face is available in
+    void SetFaceName(const wxString& facename);
 
     // call to start enumeration
     void DoEnumerate();
@@ -73,9 +73,6 @@ private:
 
     // if not empty, enum only the fonts with this facename
     wxString m_facename;
-
-    // if not empty, enum only the fonts in this family
-    wxString m_family;
 
     // if true, enum only fixed fonts
     bool m_fixedOnly;
@@ -117,10 +114,10 @@ wxFontEnumeratorHelper::wxFontEnumeratorHelper(wxFontEnumerator *fontEnum)
     m_enumEncodings = false;
 }
 
-void wxFontEnumeratorHelper::SetFamily(const wxString& family)
+void wxFontEnumeratorHelper::SetFaceName(const wxString& facename)
 {
     m_enumEncodings = true;
-    m_family = family;
+    m_facename = facename;
 }
 
 bool wxFontEnumeratorHelper::SetEncoding(wxFontEncoding encoding)
@@ -156,14 +153,14 @@ void wxFontEnumeratorHelper::DoEnumerate()
                        m_facename.empty() ? NULL : wxMSW_CONV_LPCTSTR(m_facename),
                        (FONTENUMPROC)wxFontEnumeratorProc,
                        (LPARAM)this) ;
-#else // __WIN32__
+#else // !__WXWINCE__
     LOGFONT lf;
     lf.lfCharSet = (BYTE)m_charset;
     wxStrlcpy(lf.lfFaceName, m_facename.c_str(), WXSIZEOF(lf.lfFaceName));
     lf.lfPitchAndFamily = 0;
     ::EnumFontFamiliesEx(hDC, &lf, (FONTENUMPROC)wxFontEnumeratorProc,
                          (LPARAM)this, 0 /* reserved */) ;
-#endif // Win32/CE
+#endif // WinCE/!WinCE
 
     ::ReleaseDC(NULL, hDC);
 #endif
@@ -256,10 +253,10 @@ bool wxFontEnumerator::EnumerateFacenames(wxFontEncoding encoding,
     return true;
 }
 
-bool wxFontEnumerator::EnumerateEncodings(const wxString& family)
+bool wxFontEnumerator::EnumerateEncodings(const wxString& facename)
 {
     wxFontEnumeratorHelper fe(this);
-    fe.SetFamily(family);
+    fe.SetFaceName(facename);
     fe.DoEnumerate();
 
     return true;

@@ -2164,9 +2164,9 @@ void wxTreeCtrl::SortChildren(const wxTreeItemId& item)
     // rely on the fact that TreeView_SortChildren does the same thing as our
     // default behaviour, i.e. sorts items alphabetically and so call it
     // directly if we're not in derived class (much more efficient!)
-    // RN: Note that if you find you're code doesn't sort as expected this
+    // RN: Note that if you find your code doesn't sort as expected this
     //     may be why as if you don't use the wxDECLARE_CLASS/wxIMPLEMENT_CLASS
-    //     combo for your derived wxTreeCtrl if will sort without
+    //     combo for your derived wxTreeCtrl it will sort without
     //     OnCompareItems
     if ( GetClassInfo() == wxCLASSINFO(wxTreeCtrl) )
     {
@@ -3477,7 +3477,14 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
             // to avoid such surprises, we force the generation of focus events
             // now, before we generate the selection change ones
             if ( !m_changingSelection && !m_isBeingDeleted )
+            {
+                // Setting focus can generate selection events too however,
+                // suppress them as they're completely artificial and we'll
+                // generate the real ones soon.
+                TempSetter set(m_changingSelection);
+
                 SetFocus();
+            }
             break;
 
         // instead of explicitly checking for _WIN32_IE, check if the
@@ -3638,7 +3645,7 @@ bool wxTreeCtrl::MSWOnNotify(int idCtrl, WXLPARAM lParam, WXLPARAM *result)
                     if ( MSWIsOnItem(tvhti.flags) )
                     {
                         event.m_item = tvhti.hItem;
-                        eventType = (int)hdr->code == NM_DBLCLK
+                        eventType = hdr->code == NM_DBLCLK
                                     ? wxEVT_TREE_ITEM_ACTIVATED
                                     : wxEVT_TREE_ITEM_RIGHT_CLICK;
 

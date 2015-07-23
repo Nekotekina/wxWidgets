@@ -1064,9 +1064,14 @@ wxFileName wxGenericFileCtrl::DoGetFileName() const
         wxListItem item;
         item.m_itemId = m_list->GetNextItem(-1, wxLIST_NEXT_ALL,
                                             wxLIST_STATE_SELECTED);
-        m_list->GetItem(item);
 
-        fn.Assign(m_list->GetDir(), item.m_text);
+        // ... if anything is selected in the list
+        if ( item.m_itemId != wxNOT_FOUND )
+        {
+            m_list->GetItem(item);
+
+            fn.Assign(m_list->GetDir(), item.m_text);
+        }
     }
     else // user entered the value
     {
@@ -1140,15 +1145,16 @@ bool wxGenericFileCtrl::SetDirectory( const wxString& dir )
 
 bool wxGenericFileCtrl::SetFilename( const wxString& name )
 {
-    const long item = m_list->FindItem( -1, name );
-
-    if ( item == -1 ) // file not found either because it doesn't exist or the
-        // current filter doesn't show it.
-        return false;
+    wxString dir, fn, ext;
+    wxFileName::SplitPath(name, &dir, &fn, &ext);
+    wxCHECK_MSG( dir.empty(), false,
+                 wxS( "can't specify directory component to SetFilename" ) );
 
     m_noSelChgEvent = true;
 
-    // Deselect selected items
+    m_text->ChangeValue( name );
+
+    // Deselect previously selected items
     {
         const int numSelectedItems = m_list->GetSelectedItemCount();
 
@@ -1159,7 +1165,7 @@ bool wxGenericFileCtrl::SetFilename( const wxString& name )
             for ( ;; )
             {
                 itemIndex = m_list->GetNextItem( itemIndex, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED );
-                if ( itemIndex == -1 )
+                if ( itemIndex == wxNOT_FOUND )
                     break;
 
                 m_list->SetItemState( itemIndex, 0, wxLIST_STATE_SELECTED );
@@ -1167,8 +1173,14 @@ bool wxGenericFileCtrl::SetFilename( const wxString& name )
         }
     }
 
-    m_list->SetItemState( item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED );
-    m_list->EnsureVisible( item );
+    // Select new filename if it's in the list
+    long item = m_list->FindItem(wxNOT_FOUND, name);
+
+    if ( item != wxNOT_FOUND )
+    {
+        m_list->SetItemState( item, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED );
+        m_list->EnsureVisible( item );
+    }
 
     m_noSelChgEvent = false;
 
@@ -1431,12 +1443,15 @@ void wxGenericFileCtrl::HandleAction( const wxString &fn )
 
 bool wxGenericFileCtrl::SetPath( const wxString& path )
 {
-    if ( !wxFileName::FileExists( ( path ) ) )
+    wxString dir, fn, ext;
+    wxFileName::SplitPath(path, &dir, &fn, &ext);
+
+    if ( !dir.empty() && !wxFileName::DirExists(dir) )
         return false;
 
-    wxString ext;
-    wxFileName::SplitPath( path, &m_dir, &m_fileName, &ext );
-    if ( !ext.empty() )
+    m_dir = dir;
+    m_fileName = fn;
+    if ( !ext.empty() || path.Last() == '.' )
     {
         m_fileName += wxT( "." );
         m_fileName += ext;

@@ -618,7 +618,7 @@ public:
     // helpers
     size_t GetItemCount() const { return m_choices.GetCount(); }
     const wxString& GetLabel( size_t ind ) const
-        { return m_choices.GetLabel(static_cast<int>(ind)); }
+        { return m_choices.GetLabel(static_cast<unsigned int>(ind)); }
 
 protected:
     // Used to detect if choices have been changed
@@ -956,20 +956,20 @@ public:
     */
     virtual void SetDialogValue( const wxVariant& WXUNUSED(value) )
     {
-        wxFAIL_MSG(wxT("re-implement this member function in derived class"));
+        wxFAIL_MSG(wxS("re-implement this member function in derived class"));
     }
 
     /** Return value modified by dialog.
     */
     virtual wxVariant GetDialogValue() const
     {
-        wxFAIL_MSG(wxT("re-implement this member function in derived class"));
+        wxFAIL_MSG(wxS("re-implement this member function in derived class"));
         return wxVariant();
     }
 
     /** Override to return wxValidator to be used with the wxTextCtrl
         in dialog. Note that the validator is used in the standard
-        wx way, ie. it immediately prevents user from entering invalid
+        wx way, i.e. it immediately prevents user from entering invalid
         input.
 
         @remarks

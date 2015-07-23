@@ -60,7 +60,7 @@ public:
       calling wxPropertyGrid::RegisterAdditionalEditors() prior use.
 
     - Pointer to builtin editor is available as wxPGEditor_EditorName
-      (eg. wxPGEditor_TextCtrl).
+      (e.g. wxPGEditor_TextCtrl).
 
     - To add new editor you need to register it first using static function
       wxPropertyGrid::RegisterEditorClass(), with code like this:
@@ -93,7 +93,7 @@ public:
 
     /**
         Returns pointer to the name of the editor. For example,
-        wxPGEditor_TextCtrl has name "TextCtrl". If you dont' need to access
+        wxPGEditor_TextCtrl has name "TextCtrl". If you don't need to access
         your custom editor by string name, then you do not need to implement
         this function.
     */
@@ -148,7 +148,7 @@ public:
         @remarks wxPropertyGrid will automatically unfocus the editor when
                 wxEVT_TEXT_ENTER is received and when it results in
                 property value being modified. This happens regardless of
-                editor type (ie. behaviour is same for any wxTextCtrl and
+                editor type (i.e. behaviour is same for any wxTextCtrl and
                 wxComboBox based editor).
     */
     virtual bool OnEvent( wxPropertyGrid* propgrid, wxPGProperty* property,
@@ -398,7 +398,7 @@ public:
 
 //
 // Use custom check box code instead of native control
-// for cleaner (ie. more integrated) look.
+// for cleaner (i.e. more integrated) look.
 //
 class WXDLLIMPEXP_PROPGRID wxPGCheckBoxEditor : public wxPGEditor
 {
@@ -439,7 +439,7 @@ public:
 
 
 // -----------------------------------------------------------------------
-// Editor class registeration macro (mostly for internal use)
+// Editor class registration macro (mostly for internal use)
 
 #define wxPGRegisterEditorClass(EDITOR) \
     if ( wxPGEditor_##EDITOR == NULL ) \

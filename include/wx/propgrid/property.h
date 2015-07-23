@@ -606,7 +606,7 @@ wxPG_PROP_CLASS_SPECIFIC_3          = 0x00400000
 
 /**
     The text will be echoed as asterisks (wxTE_PASSWORD will be passed to
-    textctrl etc).
+    textctrl etc.).
 */
 #define wxPG_STRING_PASSWORD                wxS("Password")
 
@@ -801,13 +801,13 @@ public:
 
     const wxPGChoiceEntry& Item( unsigned int i ) const
     {
-        wxASSERT_MSG( i < GetCount(), "invalid index" );
+        wxASSERT_MSG( i < GetCount(), wxS("invalid index") );
         return m_items[i];
     }
 
     wxPGChoiceEntry& Item( unsigned int i )
     {
-        wxASSERT_MSG( i < GetCount(), "invalid index" );
+        wxASSERT_MSG( i < GetCount(), wxS("invalid index") );
         return m_items[i];
     }
 
@@ -1293,7 +1293,7 @@ public:
         @remarks
         - Default behaviour is to return wxSize(0,0), which means no image.
         - Default image width or height is indicated with dimension -1.
-        - You can also return wxPG_DEFAULT_IMAGE_SIZE, i.e. wxSize(-1, -1).
+        - You can also return wxPG_DEFAULT_IMAGE_SIZE, i.e. wxDefaultSize.
     */
     virtual wxSize OnMeasureImage( int item = -1 ) const;
 
@@ -1473,7 +1473,7 @@ public:
     /** Returns which choice is currently selected. Only applies to properties
         which have choices.
 
-        Needs to reimplemented in derived class if property value does not
+        Needs to be reimplemented in derived class if property value does not
         map directly to a choice. Integer as index, bool, and string usually do.
     */
     virtual int GetChoiceSelection() const;
@@ -1594,7 +1594,7 @@ public:
     wxString GetName() const;
 
     /**
-        Returns property's base name (ie parent's name is not added in any
+        Returns property's base name (i.e. parent's name is not added in any
         case)
      */
     const wxString& GetBaseName() const { return m_name; }
@@ -1754,6 +1754,21 @@ public:
         return (m_flags & flag) != 0;
     }
 #endif
+    /**
+        Returns true if property has given flag set.
+    */
+    bool HasFlag(FlagType flag) const
+    {
+        return (m_flags & flag) != 0;
+    }
+
+    /**
+        Returns true if property has all given flags set.
+    */
+    bool HasFlagsExact(FlagType flags) const
+    {
+        return (m_flags & flags) == flags;
+    }
 
     /** Returns comma-delimited string of property attributes.
     */
@@ -1766,13 +1781,16 @@ public:
     */
     wxVariant GetAttributesAsList() const;
 
+#if WXWIN_COMPATIBILITY_3_0
     /**
         Returns property flags.
     */
+    wxDEPRECATED_MSG("Use HasFlag or HasFlagsExact functions instead.")
     FlagType GetFlags() const
     {
         return m_flags;
     }
+#endif
 
     const wxPGEditor* GetEditorClass() const;
 
@@ -2105,7 +2123,7 @@ public:
                  example, if you want to disable a property, call
                  Enable(false) instead of setting wxPG_PROP_DISABLED flag.
 
-        @see HasFlag(), GetFlags()
+        @see HasFlag(), HasFlagsExact()
     */
     void ChangeFlag( wxPGPropertyFlags flag, bool set )
     {
@@ -2128,7 +2146,7 @@ public:
         m_helpString = helpString;
     }
 
-    void SetLabel( const wxString& label ) { m_label = label; }
+    void SetLabel( const wxString& label );
 
     void SetName( const wxString& newName );
 
@@ -2219,7 +2237,7 @@ public:
     inline bool SetMaxLength( int maxLen );
 
     /** Call with 'false' in OnSetValue to cancel value changes after all
-        (ie. cancel 'true' returned by StringToValue() or IntToValue()).
+        (i.e. cancel 'true' returned by StringToValue() or IntToValue()).
     */
     void SetWasModified( bool set = true )
     {
@@ -2325,7 +2343,7 @@ public:
                          wxString* pString,
                          const wxPGCell** pCell );
 #endif //  WXWIN_COMPATIBILITY_3_0
-    // This function can return modfied (customized) cell object.
+    // This function can return modified (customized) cell object.
     void GetDisplayInfo( unsigned int column,
                          int choiceIndex,
                          int flags,
@@ -2391,7 +2409,7 @@ protected:
         Start looking for the child at this index.
 
         @remarks
-        Does not support scope (ie. Parent.Child notation).
+        Does not support scope (i.e. Parent.Child notation).
     */
     wxPGProperty* GetPropertyByNameWH( const wxString& name,
                                        unsigned int hintIndex ) const;

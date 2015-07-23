@@ -99,22 +99,6 @@ WXDLLIMPEXP_BASE void wxSetInstance(HINSTANCE hInst);
     #define APIENTRY FAR PASCAL
 #endif
 
-#ifdef __WIN32__
-    #define _EXPORT
-#else
-    #define _EXPORT _export
-#endif
-
-#ifndef __WIN32__
-    typedef signed short int SHORT;
-#endif
-
-#if !defined(__WIN32__)  // 3.x uses FARPROC for dialogs
-#ifndef STRICT
-    #define DLGPROC FARPROC
-#endif
-#endif
-
 /*
  * Decide what window classes we're going to use
  * for this combination of CTl3D/FAFA settings
@@ -152,7 +136,7 @@ WXDLLIMPEXP_BASE void wxSetInstance(HINSTANCE hInst);
 
 // Generic subclass proc, for panel item moving/sizing and intercept
 // EDIT control VK_RETURN messages
-extern LONG APIENTRY _EXPORT
+extern LONG APIENTRY
   wxSubclassedGenericControlProc(WXHWND hWnd, WXUINT message, WXWPARAM wParam, WXLPARAM lParam);
 
 // ---------------------------------------------------------------------------
@@ -160,7 +144,7 @@ extern LONG APIENTRY _EXPORT
 // ---------------------------------------------------------------------------
 
 // a wrapper macro for ZeroMemory()
-#if defined(__WIN32__) && !defined(__WXMICROWIN__)
+#if !defined(__WXMICROWIN__)
 #define wxZeroMemory(obj)   ::ZeroMemory(&obj, sizeof(obj))
 #else
 #define wxZeroMemory(obj)   memset((void*) & obj, 0, sizeof(obj))
@@ -181,6 +165,8 @@ extern LONG APIENTRY _EXPORT
    || defined(__MINGW32__)
     #define wxGetOSFHandle(fd) ((HANDLE)_get_osfhandle(fd))
     #define wxOpenOSFHandle(h, flags) (_open_osfhandle(wxPtrToUInt(h), flags))
+
+    wxDECL_FOR_STRICT_MINGW32(FILE*, _fdopen, (int, const char*))
     #define wx_fdopen _fdopen
 #endif
 

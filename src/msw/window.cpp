@@ -111,9 +111,7 @@
     #include <mmsystem.h>
 #endif
 
-#ifdef __WIN32__
-    #include <windowsx.h>
-#endif
+#include <windowsx.h>
 
 #if defined(__WXWINCE__)
     #include "wx/msw/wince/missing.h"
@@ -252,8 +250,8 @@ bool gs_insideCaptureChanged = false;
 // ---------------------------------------------------------------------------
 
 // the window proc for all our windows
-LRESULT WXDLLEXPORT APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message,
-                                   WPARAM wParam, LPARAM lParam);
+LRESULT WXDLLEXPORT APIENTRY
+wxWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 #if wxDEBUG_LEVEL >= 2
@@ -1635,7 +1633,7 @@ void wxWindowMSW::Update()
     // just calling UpdateWindow() is not enough, what we did in our WM_PAINT
     // handler needs to be really drawn right now
     (void)::GdiFlush();
-#endif // __WIN32__
+#endif // !WinCE
 }
 
 // ---------------------------------------------------------------------------
@@ -2729,7 +2727,8 @@ wxWindowCreationHook::~wxWindowCreationHook()
 }
 
 // Main window proc
-LRESULT WXDLLEXPORT APIENTRY _EXPORT wxWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT WXDLLEXPORT APIENTRY
+wxWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     // trace all messages: useful for the debugging but noticeably slows down
     // the code so don't do it by default
@@ -3424,7 +3423,8 @@ wxWindowMSW::MSWHandleMessage(WXLRESULT *result,
 
                 if (dwObjId == (LPARAM)OBJID_CLIENT && GetOrCreateAccessible())
                 {
-                    return LresultFromObject(IID_IAccessible, wParam, (IUnknown*) GetAccessible()->GetIAccessible());
+                    processed = true;
+                    rc.result = LresultFromObject(IID_IAccessible, wParam, (IUnknown*) GetAccessible()->GetIAccessible());
                 }
                 break;
             }

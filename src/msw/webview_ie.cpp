@@ -24,8 +24,11 @@
 #include <mshtml.h>
 #include "wx/msw/registry.h"
 #include "wx/msw/missing.h"
+#include "wx/msw/ole/safearray.h"
 #include "wx/filesys.h"
 #include "wx/dynlib.h"
+#include "wx/scopeguard.h"
+
 #include <initguid.h>
 #include <wininet.h>
 
@@ -141,18 +144,39 @@ void wxWebViewIE::LoadURL(const wxString& url)
     m_ie.CallMethod("Navigate", wxConvertStringToOle(url));
 }
 
+namespace
+{
+
+// Helper function: wrap the given string in a SAFEARRAY<VARIANT> of size 1.
+SAFEARRAY* MakeOneElementVariantSafeArray(const wxString& str)
+{
+    wxSafeArray<VT_VARIANT> sa;
+    if ( !sa.Create(1) )
+    {
+        wxLogLastError(wxT("SafeArrayCreateVector"));
+        return NULL;
+    }
+
+    long ind = 0;
+    if ( !sa.SetElement(&ind, str) )
+    {
+        wxLogLastError(wxT("SafeArrayPtrOfIndex"));
+        return NULL;
+    }
+
+    return sa.Detach();
+}
+
+} // anonymous namespace
+
 void wxWebViewIE::DoSetPage(const wxString& html, const wxString& baseUrl)
 {
-    BSTR bstr = SysAllocString(OLESTR(""));
-    SAFEARRAY *psaStrings = SafeArrayCreateVector(VT_VARIANT, 0, 1);
-    if (psaStrings != NULL)
     {
-        VARIANT *param;
-        HRESULT hr = SafeArrayAccessData(psaStrings, (LPVOID*)&param);
-        param->vt = VT_BSTR;
-        param->bstrVal = bstr;
+        SAFEARRAY* const psaStrings = MakeOneElementVariantSafeArray(wxString());
+        if ( !psaStrings )
+            return;
 
-        hr = SafeArrayUnaccessData(psaStrings);
+        wxON_BLOCK_EXIT1(SafeArrayDestroy, psaStrings);
 
         wxCOMPtr<IHTMLDocument2> document(GetDocument());
 
@@ -161,50 +185,34 @@ void wxWebViewIE::DoSetPage(const wxString& html, const wxString& baseUrl)
 
         document->write(psaStrings);
         document->close();
-
-        SafeArrayDestroy(psaStrings);
-
-        bstr = SysAllocString(html.wc_str());
-
-        // Creates a new one-dimensional array
-        psaStrings = SafeArrayCreateVector(VT_VARIANT, 0, 1);
-        if (psaStrings != NULL)
-        {
-            hr = SafeArrayAccessData(psaStrings, (LPVOID*)&param);
-            param->vt = VT_BSTR;
-            param->bstrVal = bstr;
-            hr = SafeArrayUnaccessData(psaStrings);
-
-            document = GetDocument();
-
-            if(!document)
-                return;
-
-            document->write(psaStrings);
-
-            // SafeArrayDestroy calls SysFreeString for each BSTR
-            SafeArrayDestroy(psaStrings);
-
-            //We send the events when we are done to mimic webkit
-            //Navigated event
-            wxWebViewEvent event(wxEVT_WEBVIEW_NAVIGATED,
-                                 GetId(), baseUrl, "");
-            event.SetEventObject(this);
-            HandleWindowEvent(event);
-
-            //Document complete event
-            event.SetEventType(wxEVT_WEBVIEW_LOADED);
-            event.SetEventObject(this);
-            HandleWindowEvent(event);
-        }
-        else
-        {
-            wxLogError("wxWebViewIE::SetPage() : psaStrings is NULL");
-        }
     }
-    else
+
     {
-        wxLogError("wxWebViewIE::SetPage() : psaStrings is NULL during clear");
+        SAFEARRAY* const psaStrings = MakeOneElementVariantSafeArray(html);
+
+        if ( !psaStrings )
+            return;
+
+        wxON_BLOCK_EXIT1(SafeArrayDestroy, psaStrings);
+
+        wxCOMPtr<IHTMLDocument2> document(GetDocument());
+
+        if(!document)
+            return;
+
+        document->write(psaStrings);
+
+        //We send the events when we are done to mimic webkit
+        //Navigated event
+        wxWebViewEvent event(wxEVT_WEBVIEW_NAVIGATED,
+                             GetId(), baseUrl, "");
+        event.SetEventObject(this);
+        HandleWindowEvent(event);
+
+        //Document complete event
+        event.SetEventType(wxEVT_WEBVIEW_LOADED);
+        event.SetEventObject(this);
+        HandleWindowEvent(event);
     }
 }
 
